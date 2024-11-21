@@ -1,50 +1,95 @@
-# React + TypeScript + Vite
+### Title: `multiInjectedProviderDiscovery` option not working after switching from Wallet Connect to Reown  
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+---
 
-Currently, two official plugins are available:
+#### Description  
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+After switching from Wallet Connect to Reown, the `multiInjectedProviderDiscovery` option in the `WagmiAdapter` is no longer taken into account.  
 
-## Expanding the ESLint configuration
+Here’s the updated setup:  
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+```javascript
+import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
+import { createAppKit } from '@reown/appkit/react';
 
-- Configure the top-level `parserOptions` property like this:
+export const projectId = ""
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
+const bellecour = {
+  id: 0x86,
+  name: 'iExec Sidechain',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'xRLC',
+    symbol: 'xRLC',
+  },
+  rpcUrls: {
+    public: { http: ['https://bellecour.iex.ec'] },
+    default: { http: ['https://bellecour.iex.ec'] },
+  },
+  blockExplorers: {
+    etherscan: {
+      name: 'Blockscout',
+      url: 'https://blockscout-bellecour.iex.ec',
     },
+    default: { name: 'Blockscout', url: 'https://blockscout-bellecour.iex.ec' },
   },
-})
-```
+};
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+export const wagmiAdapter = new WagmiAdapter({
+  networks: [bellecour],
+  multiInjectedProviderDiscovery: false,
+  projectId,
+});
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+createAppKit({
+  adapters: [wagmiAdapter],
+  networks: [bellecour],
+  projectId,
+  defaultNetwork: bellecour,
+});
+```  
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+When using Wallet Connect, the `multiInjectedProviderDiscovery` option worked as expected. However, after transitioning to Reown, it seems to be ignored.  
+
+---
+
+#### Expected Behavior  
+
+- The `multiInjectedProviderDiscovery` option should work as it did previously with Wallet Connect.  
+
+#### Actual Behavior  
+
+- The option is no longer taken into account after switching to Reown.  
+
+---
+
+#### Environment  
+
+- `@reown/appkit`: `1.5.0`  
+- `@reown/appkit-adapter-wagmi`: `1.5.0` 
+
+---
+
+#### Steps to Reproduce  
+
+1. Set up the `WagmiAdapter` as shown in the code above.  
+2. Transition from Wallet Connect to Reown.  
+3. Observe that the `multiInjectedProviderDiscovery` option no longer functions as expected.  
+
+---
+
+#### Additional Context  
+
+- The issue arose specifically after switching from Wallet Connect to Reown.  
+- Downgrading to Wallet Connect resolves the issue.  
+
+---
+
+#### Suggested Labels  
+
+- Bug  
+- Needs Investigation  
+
+#### Thank You  
+
+Thank you for your assistance! Please let me know if additional information is needed.  
